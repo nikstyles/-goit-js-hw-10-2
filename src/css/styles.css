@@ -18,3 +18,46 @@ body {
   max-width: 320px;
   margin-bottom: 16px;
 }
+
+img {
+}
+
+ul {
+  padding: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0 0 0 10;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.14;
+  letter-spacing: 0.02em;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.list__item {
+  margin: 0 0 0 10;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.64;
+  letter-spacing: 0.02em;
+  list-style: none;
+}
+
+.list__item-country {
+  font-weight: 600;
+  font-size: 37px;
+  line-height: 1.44;
+}
+
+span {
+  font-weight: 600;
+}
