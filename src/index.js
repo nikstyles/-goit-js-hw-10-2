@@ -1,78 +1,74 @@
 import './css/styles.css';
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
+import { fetchCountries } from './fetchCountries';
 
 const DEBOUNCE_DELAY = 300;
-const input = document.querySelector('input');
+const input = document.querySelector('#search-box');
 const list = document.querySelector('.country-list');
-const divBlockOneCountry = document.querySelector('.country-info');
+const country = document.querySelector('.country-info');
 
-input.addEventListener('input', debounce(fetchCountries, DEBOUNCE_DELAY));
+input.addEventListener('input', debounce(inputValue, DEBOUNCE_DELAY));
 
-function fetchCountries(evt) {
-  let currentSearch;
-  //   console.log(evt.target.value);
-  currentSearch = evt.target.value.trim();
+function inputValue() {
+  const value = input.value.trim();
 
-  fetch(
-    `https://restcountries.com/v3.1/name/${currentSearch}?fields=name,capital,population,flags,languages`
-  )
-    .then(response => response.json())
-    .then(data => {
-      console.log('data', data);
-      markup(data);
+  if (value === '') {
+    clearingInput();
+    return;
+  }
+
+  fetchCountries(value)
+    .then(countries => {
+      if (countries.length > 10) {
+        Notiflix.Notify.info(
+          'Too many matches found. Please enter a more specific name.'
+        );
+        return;
+      }
+      if (countries.length > 2 && countries.length < 10) {
+        createMarkup(list, countryList, countries);
+      }
+      if (countries.length === 1) {
+        createMarkup(country, countryInformation, countries);
+      }
     })
-    .catch(error => {
-      console.log('error', error);
+    .catch(() => {
+      return Notiflix.Notify.failure(
+        'Oops, there is no country with that name'
+      );
     });
 }
 
-function markup(arr) {
-  const listOneMarkup = createOneCountryList(arr);
-  const listMarkup = createlist(arr);
-
-  if (arr.length === 1) {
-    divBlockOneCountry.innerHTML = listOneMarkup;
-    list.innerHTML = '';
-  } else if (arr.length > 10) {
-    list.innerHTML = '';
-    divBlockOneCountry.innerHTML = '';
-    Notiflix.Notify.info(
-      'Too many matches found. Please enter a more specific name.'
-    );
-  } else if (arr.length <= 10 && arr.length > 2) {
-    list.innerHTML = listMarkup;
-    divBlockOneCountry.innerHTML = '';
-  }
+function clearingInput() {
+  list.innerHTML = '';
+  country.innerHTML = '';
 }
 
-function createlist(arr) {
-  return arr?.reduce(
-    (acc, { flags, name }) =>
-      acc +
-      `<li class="list">
-     <img  src="${flags.svg}" alt="flag" width=40> <p>${name.official}</p>
-    </li>`,
-    ''
-  );
+function createMarkup(el, func, arr) {
+  const markup = arr.map(country => func(country)).join('');
+  clearingInput();
+  return el.insertAdjacentHTML('beforeend', markup);
 }
 
-function createOneCountryList(arr) {
-  return arr?.reduce(
-    (acc, { flags, name, capital, population, languages }) =>
-      acc +
-      `<ul>
+function countryList({ name, flags }) {
+  return `<li class="list">
+        <img src="${flags.svg}" width = "40" alt="${name.official}" class="img">
+        <p class ="title">${name.official}</p>
+      </li>`;
+}
+
+function countryInformation({ name, capital, population, flags, languages }) {
+  return `<ul>
 <li class="list__item list"><img width=40 src="${
-        flags.svg
-      }" alt="flag"> <p class="list__item-country">${name.official}</p></li>
+    flags.svg
+  }" alt="flag"> <p class="list__item-country">${name.official}</p></li>
 <li class="list__item"><span>Capital:</span> ${capital}</li>
 <li class="list__item"><span>Population:</span> ${population}</li>
 <li class="list__item"><span>Languages:</span> ${Object.values(languages).join(
-        ', '
-      )}</li>
-    </ul>`,
-    ''
-  );
+    ', '
+  )}</li>
+    </ul>`;
 }
 
 // 1) повесить addEventListener на input
